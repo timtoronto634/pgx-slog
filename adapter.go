@@ -3,6 +3,7 @@ package pgxslog
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/tracelog"
@@ -25,7 +26,12 @@ func (l *Logger) Log(ctx context.Context, level tracelog.LogLevel, msg string, d
 	for k, v := range data {
 		attrs = append(attrs, slog.Any(k, v))
 	}
-	logger.LogAttrs(ctx, translateLevel(level), msg, attrs...)
+
+	// remove \n, \t from msg
+	m := strings.ReplaceAll(msg, "\n", " ")
+	formattedMsg := strings.ReplaceAll(m, "\t", " ")
+
+	logger.LogAttrs(ctx, translateLevel(level), formattedMsg, attrs...)
 }
 
 func translateLevel(level tracelog.LogLevel) slog.Level {
